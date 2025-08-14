@@ -1,0 +1,17 @@
+---
+- name: play2
+  hosts: yandex
+  become: yes
+  tasks:
+  -  name: Install tuned
+     apt:
+      name:
+        -  tuned
+      state: present
+      update_cache: yes
+    
+  - name: start tuned
+    ansible.builtin.service:
+      name: tuned
+      state: started
+      enabled: yes

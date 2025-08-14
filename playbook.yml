@@ -1,0 +1,25 @@
+---
+- name: play1
+  hosts: yandex
+  become: yes
+  tasks:
+  - name: Create folder
+    ansible.builtin.file:
+      path: "/tmp/apache_kafka"
+      state: directory
+      mode: "0755"
+
+  - name: Download apache_kafka
+    ansible.builtin.uri:
+      url: "https://dlcdn.apache.org/kafka/3.9.1/kafka-3.9.1-src.tgz"
+      dest: "/tmp/apache_kkafka-3.9.1-src.tgz"
+      method: GET
+      return_content: yes
+      status_code: 200,304
+
+  - name: Unpacking
+    ansible.builtin.unarchive:
+      src: "/tmp/apache_kkafka-3.9.1-src.tgz"
+      dest: "/tmp/apache_kafka/"
+      remote_src: yes
+      mode: "0755"
