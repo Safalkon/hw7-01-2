@@ -1,17 +1,14 @@
 ---
-- name: play2
+- name: MOTD
   hosts: yandex
   become: yes
+  vars:
+    motd_message: "Привет"
+
   tasks:
-  -  name: Install tuned
-     apt:
-      name:
-        -  tuned
-      state: present
-      update_cache: yes
-    
-  - name: start tuned
-    ansible.builtin.service:
-      name: tuned
-      state: started
-      enabled: yes
+    - name: change motd
+      ansible.builtin.copy:
+        dest: /etc/motd
+        content: |
+          {{ motd_message }}
+        mode: '0755'
