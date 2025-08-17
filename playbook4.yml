@@ -1,0 +1,21 @@
+---
+- name: MOTD
+  hosts: yandex
+  become: yes
+  vars:
+    motd_message: |
+      ====================================
+      Добро пожаловать на сервер: {{ ansible_hostname }}
+      IP-адрес: {{ ansible_default_ipv4.address }}
+      Дата: {{ ansible_date_time.date }}
+      Время: {{ ansible_date_time.time }}
+      ====================================
+      Хорошего дня, системный администратор!
+      ====================================
+
+  tasks:
+    - name: change motd
+      ansible.builtin.copy:
+        dest: /etc/motd
+        content: "{{ motd_message }}"
+        mode: '0755'

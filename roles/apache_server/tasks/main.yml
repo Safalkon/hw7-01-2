@@ -1,0 +1,67 @@
+---
+- name: Check if UFW is installed
+  ansible.builtin.stat:
+    path: /usr/sbin/ufw
+  register: ufw_check
+  changed_when: false
+  tags: firewall
+
+- name: Configure firewall
+  block:
+    - name: Allow HTTP via UFW
+      ansible.builtin.ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+      when: ufw_check.stat.exists
+
+    - name: Configure iptables fallback
+      block:
+        - name: Install iptables-persistent
+          ansible.builtin.apt:
+            name: iptables-persistent
+            state: present
+
+        - name: Add iptables rule
+          ansible.builtin.copy:
+            dest: /etc/iptables/rules.v4
+            content: |
+              *filter
+              :INPUT ACCEPT [0:0]
+              -A INPUT -p tcp --dport 80 -j ACCEPT
+              COMMIT
+            mode: '0644'
+          notify: reload iptables
+      when: not ufw_check.stat.exists
+  tags: firewall
+
+- name: Install Apache
+  ansible.builtin.apt:
+    name: apache2
+    state: present
+
+- name: Configure Apache
+  ansible.builtin.template:
+    src: apache-config.j2
+    dest: /etc/apache2/sites-available/000-default.conf
+    mode: '0644'
+  notify: restart apache
+
+- name: Create custom index.html
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    mode: '0644'
+  notify: restart apache
+
+- name: Verify website is accessible
+  ansible.builtin.uri:
+    url: "http://{{ ansible_host }}"
+    return_content: yes
+    status_code: 200
+  register: webpage
+  ignore_errors: yes
+
+- name: Show webpage content (debug)
+  ansible.builtin.debug:
+    msg: "{{ webpage.content | default('No content received') | truncate(300) }}"

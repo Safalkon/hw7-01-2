@@ -1,0 +1,3 @@
+---
+# Default variables for apache_server role
+apache_port: 80

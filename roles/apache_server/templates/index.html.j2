@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Info - {{ ansible_hostname }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #2c3e50; }
+        .info { background: #f9f9f9; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>System Information</h1>
+    <div class="info">
+        <p><strong>Hostname:</strong> {{ ansible_hostname }}</p>
+        <p><strong>IP Address:</strong> {{ ansible_default_ipv4.address }}</p>
+        <p><strong>CPU:</strong> {{ ansible_processor_vcpus }} vCPUs</p>
+        <p><strong>RAM:</strong> {{ (ansible_memtotal_mb / 1024)|round(2) }} GB</p>
+        
+        <p><strong>Root Disk:</strong>
+        {% for mount in ansible_mounts if mount.mount == "/" %}
+            {{ (mount.size_total / 1073741824)|round(2) }} GB
+        {% endfor %}
+        </p>
+        
+        <p><strong>OS:</strong> {{ ansible_distribution }} {{ ansible_distribution_version }}</p>
+    </div>
+</body>
+</html>
